@@ -35,9 +35,9 @@ export const TAGS_BY_ID: Record<string, Tag> = Object.fromEntries(TAGS.map((t) =
 /** Placements initiaux (dates figées pour éviter tout écart d'hydratation) */
 export const INITIAL_PLACEMENTS: Record<string, Placement> = {
   C1: { tagId: "tag3", placedAt: "2026-10-09T08:00:00" },
-  D1: { tagId: "tag5", placedAt: "2026-10-09T08:05:00" },
-  D2: { tagId: "tag2", placedAt: "2026-10-09T08:10:00" },
-  C2: { tagId: "tag1", placedAt: "2026-10-09T08:15:00" },
+  D1: { tagId: "tag2", placedAt: "2026-10-09T08:05:00" },
+  D2: { tagId: "tag5", placedAt: "2026-10-09T08:10:00" },
+  B2: { tagId: "tag1", placedAt: "2026-10-09T08:15:00" },
   E1: { tagId: "tag4", placedAt: "2026-10-09T08:20:00" },
 }
 
