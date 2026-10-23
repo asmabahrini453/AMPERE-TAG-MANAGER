@@ -126,7 +126,8 @@ export function PlanBoard() {
                     {tag && placement ? (
                       <span className="flex flex-col items-center leading-none">
                         <span
-                          className={`flex flex-col items-center rounded-[3px] px-[3px] py-[2px] shadow-sm ${KIND_STYLES[tag.kind].chip}`}
+                          className="flex flex-col items-center rounded-[3px] px-[3px] py-[2px] shadow-sm"
+                          style={{ backgroundColor: tag.color, color: tag.textColor }}
                         >
                           <span className="font-mono text-[7.5px] font-bold tracking-tight">{tag.code}</span>
                           <span className="font-mono text-[7px] tabular-nums opacity-80">
@@ -135,7 +136,8 @@ export function PlanBoard() {
                         </span>
                         <span
                           aria-hidden="true"
-                          className={`-mt-[2px] size-[5px] rotate-45 ${KIND_STYLES[tag.kind].dot}`}
+                          className="-mt-[2px] size-[5px] rotate-45"
+                          style={{ backgroundColor: tag.color }}
                         />
 
                         {/* info-bulle au survol */}
@@ -194,7 +196,7 @@ export function PlanBoard() {
                       armed ? "border-aodt-red bg-aodt-red/10" : "border-border bg-background hover:border-aodt-navy"
                     }`}
                   >
-                    <span aria-hidden="true" className={`size-2 rounded-full ${KIND_STYLES[tag.kind].dot}`} />
+                    <span aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
                     <span className="font-mono text-[11px] font-bold text-foreground">{tag.code}</span>
                   </button>
                 </li>
@@ -230,7 +232,8 @@ export function PlanBoard() {
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
                   <span
-                    className={`flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold ${KIND_STYLES[tag.kind].chip}`}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold"
+                    style={{ backgroundColor: tag.color, color: tag.textColor }}
                   >
                     {slotId}
                   </span>
