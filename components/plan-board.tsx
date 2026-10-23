@@ -59,9 +59,11 @@ export function PlanBoard() {
 
   return (
     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
+      {/* ---------------- plan + calque de pins ---------------- */}
       <section className="relative min-w-0 flex-1 rounded-lg border border-border bg-card">
         <div className="relative">
           <PlanAmp2 />
+
           <div className="absolute inset-0">
             {SLOTS.map((slot) => {
               const slotPlacements = placementsBySlot[slot.id] ?? []
@@ -120,7 +122,7 @@ export function PlanBoard() {
                             e.stopPropagation()
                             e.dataTransfer.setData("text/plain", tag.id)
                           }}
-                          className="group/pin absolute flex -translate-x-1/2 -translate-y-1/2 cursor-grab items-center justify-center active:cursor-grabbing"
+                          className="group/pin absolute flex -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none items-center justify-center p-2 active:cursor-grabbing"
                           style={{
                             left: `${(placement.offset?.x ?? 0.5) * 100}%`,
                             top: `${(placement.offset?.y ?? 0.5) * 100}%`,
@@ -131,6 +133,8 @@ export function PlanBoard() {
                             className="block size-[9px] rounded-full border border-white shadow-sm"
                             style={{ backgroundColor: tag.color }}
                           />
+
+                          {/* info-bulle au survol */}
                           <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-left shadow-md group-hover/pin:block">
                             <span className="block font-mono text-[10px] font-bold text-popover-foreground">
                               {tag.code} · {slot.id}
@@ -149,6 +153,8 @@ export function PlanBoard() {
             })}
           </div>
         </div>
+
+        {/* barre d'état sous le plan */}
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-3 py-2">
           <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
             {armedTagId
@@ -161,12 +167,14 @@ export function PlanBoard() {
         </div>
       </section>
 
+      {/* ---------------- panneau des tags ---------------- */}
       <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
         <div className="rounded-lg border border-border bg-card p-3">
           <div className="flex items-center justify-between gap-2">
             <h2 className="font-sans text-xs font-bold uppercase tracking-[0.16em] text-foreground">Tags en attente</h2>
             <span className="font-mono text-[11px] tabular-nums text-muted-foreground">{pool.length}</span>
           </div>
+
           <ul className="mt-3 flex flex-wrap gap-2">
             {pool.map((tag) => {
               const armed = armedTagId === tag.id
@@ -187,7 +195,9 @@ export function PlanBoard() {
                 </li>
               )
             })}
-            {pool.length === 0 && <li className="font-mono text-[11px] text-muted-foreground">Tous les tags sont positionnés.</li>}
+            {pool.length === 0 && (
+              <li className="font-mono text-[11px] text-muted-foreground">Tous les tags sont positionnés.</li>
+            )}
           </ul>
         </div>
 
@@ -204,6 +214,7 @@ export function PlanBoard() {
               </button>
             )}
           </div>
+
           <ul className="mt-3 flex flex-col divide-y divide-border">
             {placedList.map(({ tag, placement }) => (
               <li key={placement.tagId} className="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
@@ -238,7 +249,9 @@ export function PlanBoard() {
                 </button>
               </li>
             ))}
-            {placedList.length === 0 && <li className="font-mono text-[11px] text-muted-foreground">Aucun tag sur le plan.</li>}
+            {placedList.length === 0 && (
+              <li className="font-mono text-[11px] text-muted-foreground">Aucun tag sur le plan.</li>
+            )}
           </ul>
         </div>
       </aside>
