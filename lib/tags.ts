@@ -5,41 +5,37 @@ export type Tag = {
   code: string
   kind: TagKind
   ref: string
+  color: string
+  textColor: string
 }
 
-/** Placement d'un tag sur un emplacement du plan (1 tag = 1 emplacement) */
+/** Un placement = un tag posé sur un emplacement, avec un décalage dans la cellule */
 export type Placement = {
   tagId: string
+  slotId: string
   /** Horodatage ISO du dépôt */
   placedAt: string
-}
-
-export const TAG_KIND_LABEL: Record<TagKind, string> = {
-  palette: "Palette",
-  chariot: "Chariot",
-  bac: "Bac",
+  /** Décalage du pin à l'intérieur de sa cellule */
+  offset?: { x: number; y: number }
 }
 
 export const TAGS: Tag[] = [
-  { id: "t-1", code: "TG-1042", kind: "palette", ref: "OF 88-201" },
-  { id: "t-2", code: "TG-1043", kind: "palette", ref: "OF 88-204" },
-  { id: "t-3", code: "TG-1057", kind: "palette", ref: "OF 88-209" },
-  { id: "t-4", code: "TG-2011", kind: "chariot", ref: "CH-04" },
-  { id: "t-5", code: "TG-2014", kind: "chariot", ref: "CH-07" },
-  { id: "t-6", code: "TG-3320", kind: "bac", ref: "BAC-118" },
-  { id: "t-7", code: "TG-3325", kind: "bac", ref: "BAC-131" },
-  { id: "t-8", code: "TG-1061", kind: "palette", ref: "OF 88-216" },
-  { id: "t-9", code: "TG-1066", kind: "palette", ref: "OF 88-222" },
-  { id: "t-10", code: "TG-2019", kind: "chariot", ref: "CH-11" },
+  { id: "tag3", code: "AP-TAG3", kind: "palette", ref: "61599A75 · 1633262197", color: "#ef3f36", textColor: "#ffffff" },
+  { id: "tag1", code: "AP-TAG1", kind: "palette", ref: "3C316AD5 · 1009871573", color: "#347fe8", textColor: "#ffffff" },
+  { id: "tag5", code: "AP-TAG5", kind: "palette", ref: "33D7160F · 869733903", color: "#ff9900", textColor: "#111111" },
+  { id: "tag2", code: "AP-TAG2", kind: "palette", ref: "34D8405 · 55411717", color: "#e800e8", textColor: "#ffffff" },
+  { id: "tag4", code: "AP-TAG4", kind: "palette", ref: "7B35730F · 2067100431", color: "#17df16", textColor: "#111111" },
 ]
 
 export const TAGS_BY_ID: Record<string, Tag> = Object.fromEntries(TAGS.map((t) => [t.id, t]))
 
-/** Placements initiaux (dates figées pour éviter tout écart d'hydratation) */
+/** Placements initiaux : plusieurs tags peuvent partager un emplacement. */
 export const INITIAL_PLACEMENTS: Record<string, Placement> = {
-  C3: { tagId: "t-1", placedAt: "2026-08-26T06:42:00" },
-  E2: { tagId: "t-4", placedAt: "2026-08-26T07:15:00" },
-  A1: { tagId: "t-6", placedAt: "2026-08-25T21:58:00" },
+  tag3: { tagId: "tag3", slotId: "C1", placedAt: "2026-10-09T08:00:00", offset: { x: 0.85, y: 0.5 } },
+  tag1: { tagId: "tag1", slotId: "C1", placedAt: "2026-10-09T08:05:00", offset: { x: 0.15, y: 0.15 } },
+  tag5: { tagId: "tag5", slotId: "D1", placedAt: "2026-10-09T08:10:00", offset: { x: 0.15, y: 0.15 } },
+  tag2: { tagId: "tag2", slotId: "D1", placedAt: "2026-10-09T08:15:00", offset: { x: 0.85, y: 0.85 } },
+  tag4: { tagId: "tag4", slotId: "E1", placedAt: "2026-10-09T08:20:00", offset: { x: 0.5, y: 0.5 } },
 }
 
 const DATE_FMT = new Intl.DateTimeFormat("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" })

@@ -6,52 +6,44 @@ import {
   INITIAL_PLACEMENTS,
   TAGS,
   TAGS_BY_ID,
-  TAG_KIND_LABEL,
   formatDate,
   formatTime,
   type Placement,
-  type Tag,
 } from "@/lib/tags"
 
-const KIND_STYLES: Record<Tag["kind"], { chip: string; dot: string; text: string }> = {
-  palette: { chip: "bg-aodt-navy text-white", dot: "bg-aodt-navy", text: "text-aodt-navy" },
-  chariot: { chip: "bg-aodt-red text-white", dot: "bg-aodt-red", text: "text-aodt-red" },
-  bac: { chip: "bg-foreground text-background", dot: "bg-foreground", text: "text-foreground" },
-}
-
 export function PlanBoard() {
+  /** Indexé par tagId : un slot peut contenir plusieurs tags */
   const [placements, setPlacements] = useState<Record<string, Placement>>(INITIAL_PLACEMENTS)
   const [armedTagId, setArmedTagId] = useState<string | null>(null)
   const [dragOverSlot, setDragOverSlot] = useState<string | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
 
-  const slotByTag = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const [slotId, p] of Object.entries(placements)) map[p.tagId] = slotId
+  const placementsBySlot = useMemo(() => {
+    const map: Record<string, Placement[]> = {}
+    for (const p of Object.values(placements)) {
+      ;(map[p.slotId] ??= []).push(p)
+    }
     return map
   }, [placements])
 
-  const pool = TAGS.filter((t) => !slotByTag[t.id])
-  const placedList = Object.entries(placements)
-    .map(([slotId, p]) => ({ slotId, tag: TAGS_BY_ID[p.tagId], placedAt: p.placedAt }))
-    .sort((a, b) => (a.placedAt < b.placedAt ? 1 : -1))
+  const pool = TAGS.filter((t) => !placements[t.id])
+  const placedList = Object.values(placements)
+    .map((p) => ({ tag: TAGS_BY_ID[p.tagId], placement: p }))
+    .sort((a, b) => (a.placement.placedAt < b.placement.placedAt ? 1 : -1))
 
   function placeTag(tagId: string, slotId: string) {
-    setPlacements((prev) => {
-      const next = { ...prev }
-      const previousSlot = Object.keys(next).find((s) => next[s].tagId === tagId)
-      if (previousSlot) delete next[previousSlot]
-      next[slotId] = { tagId, placedAt: new Date().toISOString() }
-      return next
-    })
+    setPlacements((prev) => ({
+      ...prev,
+      [tagId]: { tagId, slotId, placedAt: new Date().toISOString() },
+    }))
     setArmedTagId(null)
     setSelectedSlot(slotId)
   }
 
-  function removeTag(slotId: string) {
+  function removeTag(tagId: string) {
     setPlacements((prev) => {
       const next = { ...prev }
-      delete next[slotId]
+      delete next[tagId]
       return next
     })
     setSelectedSlot(null)
@@ -74,8 +66,7 @@ export function PlanBoard() {
 
           <div className="absolute inset-0">
             {SLOTS.map((slot) => {
-              const placement = placements[slot.id]
-              const tag = placement ? TAGS_BY_ID[placement.tagId] : null
+              const slotPlacements = placementsBySlot[slot.id] ?? []
               const isTarget = dragOverSlot === slot.id
               const isSelected = selectedSlot === slot.id
 
@@ -105,15 +96,13 @@ export function PlanBoard() {
                     type="button"
                     onClick={() => handleSlotClick(slot.id)}
                     aria-label={
-                      tag
-                        ? `Emplacement ${slot.id} — tag ${tag.code}, posé le ${formatDate(placement!.placedAt)} à ${formatTime(placement!.placedAt)}`
+                      slotPlacements.length > 0
+                        ? `Emplacement ${slot.id} — ${slotPlacements.length} tag(s) : ${slotPlacements
+                            .map((p) => TAGS_BY_ID[p.tagId].code)
+                            .join(", ")}`
                         : `Emplacement ${slot.id} — libre`
                     }
-                    draggable={Boolean(tag)}
-                    onDragStart={(e) => {
-                      if (tag) e.dataTransfer.setData("text/plain", tag.id)
-                    }}
-                    className={`group absolute inset-0 flex items-center justify-center transition-colors ${
+                    className={`group absolute inset-0 transition-colors ${
                       isTarget
                         ? "bg-aodt-red/20 ring-2 ring-aodt-red"
                         : isSelected
@@ -123,35 +112,41 @@ export function PlanBoard() {
                             : ""
                     }`}
                   >
-                    {tag && placement ? (
-                      <span className="flex flex-col items-center leading-none">
+                    {slotPlacements.map((placement) => {
+                      const tag = TAGS_BY_ID[placement.tagId]
+                      return (
                         <span
-                          className={`flex flex-col items-center rounded-[3px] px-[3px] py-[2px] shadow-sm ${KIND_STYLES[tag.kind].chip}`}
+                          key={placement.tagId}
+                          draggable
+                          onDragStart={(e) => {
+                            e.stopPropagation()
+                            e.dataTransfer.setData("text/plain", tag.id)
+                          }}
+                          className="group/pin absolute flex -translate-x-1/2 -translate-y-1/2 cursor-grab touch-none items-center justify-center p-2 active:cursor-grabbing"
+                          style={{
+                            left: `${(placement.offset?.x ?? 0.5) * 100}%`,
+                            top: `${(placement.offset?.y ?? 0.5) * 100}%`,
+                          }}
                         >
-                          <span className="font-mono text-[7.5px] font-bold tracking-tight">{tag.code}</span>
-                          <span className="font-mono text-[7px] tabular-nums opacity-80">
-                            {formatTime(placement.placedAt)}
-                          </span>
-                        </span>
-                        <span
-                          aria-hidden="true"
-                          className={`-mt-[2px] size-[5px] rotate-45 ${KIND_STYLES[tag.kind].dot}`}
-                        />
+                          <span
+                            aria-hidden="true"
+                            className="block size-[9px] rounded-full border border-white shadow-sm"
+                            style={{ backgroundColor: tag.color }}
+                          />
 
-                        {/* info-bulle au survol */}
-                        <span className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-left shadow-md group-hover:block">
-                          <span className="block font-mono text-[10px] font-bold text-popover-foreground">
-                            {tag.code} · {slot.id}
-                          </span>
-                          
-                          <span className="block font-mono text-[9px] text-muted-foreground">
-                            {formatDate(placement.placedAt)} — {formatTime(placement.placedAt)}
+                          {/* info-bulle au survol */}
+                          <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-popover px-2 py-1 text-left shadow-md group-hover/pin:block">
+                            <span className="block font-mono text-[10px] font-bold text-popover-foreground">
+                              {tag.code} · {slot.id}
+                            </span>
+                            <span className="block font-mono text-[9px] text-muted-foreground">
+                              {formatDate(placement.placedAt)} — {formatTime(placement.placedAt)}
+                            </span>
                           </span>
                         </span>
-                      </span>
-                    ) : (
-                      <span className="sr-only">Libre</span>
-                    )}
+                      )
+                    })}
+                    {slotPlacements.length === 0 && <span className="sr-only">Libre</span>}
                   </button>
                 </div>
               )
@@ -194,7 +189,7 @@ export function PlanBoard() {
                       armed ? "border-aodt-red bg-aodt-red/10" : "border-border bg-background hover:border-aodt-navy"
                     }`}
                   >
-                    <span aria-hidden="true" className={`size-2 rounded-full ${KIND_STYLES[tag.kind].dot}`} />
+                    <span aria-hidden="true" className="size-2 rounded-full" style={{ backgroundColor: tag.color }} />
                     <span className="font-mono text-[11px] font-bold text-foreground">{tag.code}</span>
                   </button>
                 </li>
@@ -221,32 +216,33 @@ export function PlanBoard() {
           </div>
 
           <ul className="mt-3 flex flex-col divide-y divide-border">
-            {placedList.map(({ slotId, tag, placedAt }) => (
-              <li key={slotId} className="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
+            {placedList.map(({ tag, placement }) => (
+              <li key={placement.tagId} className="flex items-center gap-2 py-2 first:pt-0 last:pb-0">
                 <button
                   type="button"
-                  onMouseEnter={() => setSelectedSlot(slotId)}
-                  onClick={() => setSelectedSlot(slotId)}
+                  onMouseEnter={() => setSelectedSlot(placement.slotId)}
+                  onClick={() => setSelectedSlot(placement.slotId)}
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
                   <span
-                    className={`flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold ${KIND_STYLES[tag.kind].chip}`}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold"
+                    style={{ backgroundColor: tag.color, color: tag.textColor }}
                   >
-                    {slotId}
+                    {placement.slotId}
                   </span>
-                                   <span className="flex min-w-0 flex-col leading-tight">
+                  <span className="flex min-w-0 flex-col leading-tight">
                     <span className="truncate font-mono text-[11px] font-bold text-foreground">
-                      Tag {tag.code} positionné à {slotId}
+                      Tag {tag.code} positionné à {placement.slotId}
                     </span>
                     <span className="font-mono text-[9px] tabular-nums text-muted-foreground">
-                      le {formatDate(placedAt)} à {formatTime(placedAt)}
+                      le {formatDate(placement.placedAt)} à {formatTime(placement.placedAt)}
                     </span>
                   </span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => removeTag(slotId)}
-                  aria-label={`Retirer le tag ${tag.code} de l'emplacement ${slotId}`}
+                  onClick={() => removeTag(placement.tagId)}
+                  aria-label={`Retirer le tag ${tag.code} de l'emplacement ${placement.slotId}`}
                   className="shrink-0 rounded-md border border-border px-1.5 py-1 font-mono text-[10px] text-muted-foreground hover:border-aodt-red hover:text-aodt-red"
                 >
                   ✕
@@ -262,3 +258,4 @@ export function PlanBoard() {
     </div>
   )
 }
+
