@@ -106,7 +106,7 @@ export function PlanBoard() {
                     onClick={() => handleSlotClick(slot.id)}
                     aria-label={
                       tag
-                        ? `Emplacement ${slot.id} — tag ${tag.code}, posé le ${formatDate(placement!.placedAt)} à ${formatTime(placement!.placedAt)}`
+                        ? `Emplacement ${slot.id} — tag ${tag.code}, posé le ${formatDate(placement!.placedAt)} à ${formatTime(placement!.placedAt)} — ${tag.plannedPosition}`
                         : `Emplacement ${slot.id} — libre`
                     }
                     draggable={Boolean(tag)}
@@ -146,6 +146,9 @@ export function PlanBoard() {
                           
                           <span className="block font-mono text-[9px] text-muted-foreground">
                             {formatDate(placement.placedAt)} — {formatTime(placement.placedAt)}
+                          </span>
+                          <span className="block max-w-[220px] truncate font-mono text-[9px] text-muted-foreground">
+                            {tag.anchor} · {tag.plannedPosition}
                           </span>
                         </span>
                       </span>
@@ -239,7 +242,7 @@ export function PlanBoard() {
                       Tag {tag.code} positionné à {slotId}
                     </span>
                     <span className="font-mono text-[9px] tabular-nums text-muted-foreground">
-                      le {formatDate(placedAt)} à {formatTime(placedAt)}
+                      le {formatDate(placedAt)} à {formatTime(placedAt)} · {tag.anchor}
                     </span>
                   </span>
                 </button>
