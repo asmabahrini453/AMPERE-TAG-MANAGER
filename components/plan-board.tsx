@@ -19,6 +19,14 @@ const KIND_STYLES: Record<Tag["kind"], { chip: string; dot: string; text: string
   bac: { chip: "bg-foreground text-background", dot: "bg-foreground", text: "text-foreground" },
 }
 
+const TAG_COLOR_STYLES: Record<Tag["color"], { chip: string; dot: string }> = {
+  bleu: { chip: "bg-blue-800 text-white", dot: "bg-blue-800" },
+  orange: { chip: "bg-orange-500 text-black", dot: "bg-orange-500" },
+  violet: { chip: "bg-purple-600 text-white", dot: "bg-purple-600" },
+  vert: { chip: "bg-green-700 text-white", dot: "bg-green-700" },
+  rouge: { chip: "bg-red-600 text-white", dot: "bg-red-600" },
+}
+
 export function PlanBoard() {
   const [placements, setPlacements] = useState<Record<string, Placement>>(INITIAL_PLACEMENTS)
   const [armedTagId, setArmedTagId] = useState<string | null>(null)
@@ -126,7 +134,7 @@ export function PlanBoard() {
                     {tag && placement ? (
                       <span className="flex flex-col items-center leading-none">
                         <span
-                          className={`flex flex-col items-center rounded-[3px] px-[3px] py-[2px] shadow-sm ${KIND_STYLES[tag.kind].chip}`}
+                          className={`flex flex-col items-center rounded-[3px] px-[3px] py-[2px] shadow-sm ${TAG_COLOR_STYLES[tag.color].chip}`}
                         >
                           <span className="font-mono text-[7.5px] font-bold tracking-tight">{tag.code}</span>
                           <span className="font-mono text-[7px] tabular-nums opacity-80">
@@ -135,7 +143,7 @@ export function PlanBoard() {
                         </span>
                         <span
                           aria-hidden="true"
-                          className={`-mt-[2px] size-[5px] rotate-45 ${KIND_STYLES[tag.kind].dot}`}
+                          className={`-mt-[2px] size-[5px] rotate-45 ${TAG_COLOR_STYLES[tag.color].dot}`}
                         />
 
                         {/* info-bulle au survol */}
@@ -197,7 +205,7 @@ export function PlanBoard() {
                       armed ? "border-aodt-red bg-aodt-red/10" : "border-border bg-background hover:border-aodt-navy"
                     }`}
                   >
-                    <span aria-hidden="true" className={`size-2 rounded-full ${KIND_STYLES[tag.kind].dot}`} />
+                    <span aria-hidden="true" className={`size-2 rounded-full ${TAG_COLOR_STYLES[tag.color].dot}`} />
                     <span className="font-mono text-[11px] font-bold text-foreground">{tag.code}</span>
                   </button>
                 </li>
@@ -233,7 +241,7 @@ export function PlanBoard() {
                   className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
                   <span
-                    className={`flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold ${KIND_STYLES[tag.kind].chip}`}
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-[4px] font-mono text-[10px] font-bold ${TAG_COLOR_STYLES[tag.color].chip}`}
                   >
                     {slotId}
                   </span>
